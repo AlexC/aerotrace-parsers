@@ -1,0 +1,50 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "aerotrace-parsers"
+version = "0.1.0"
+description = "Aircraft Engine Monitoring System (EMS) data parsers for real-time telemetry processing"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "Alex Cartwright", email = "alex@gewok.co.uk"},
+]
+keywords = ["aviation", "ems", "engine", "telemetry", "cgr30p", "aircraft"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering",
+    "Topic :: System :: Monitoring",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+    "ruff>=0.6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/alexc/aerotrace-parsers"
+Repository = "https://github.com/alexc/aerotrace-parsers"
+Issues = "https://github.com/alexc/aerotrace-parsers/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/aerotrace/parsers"]
+
+# Ruff configuration - using smart defaults
+[tool.ruff]
+target-version = "py39"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=src/aerotrace/parsers --cov-report=term-missing"
