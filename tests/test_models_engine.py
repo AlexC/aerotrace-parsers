@@ -3,53 +3,49 @@ Tests for aerotrace.models.engine module.
 """
 
 import pytest
-from aerotrace.models import CylinderReading, CylinderReadings, EngineData
+from aerotrace.models import Cylinder, Cylinders, RPM, Fuel, Oil, Electrical
 
 
-class TestCylinderReading:
+class TestCylinder:
     """Test cases for the CylinderReading dataclass."""
 
     def test_valid_cylinder_reading(self):
         """Test creating a valid cylinder reading."""
-        reading = CylinderReading(number=1, value=1200.5)
+        reading = Cylinder(number=1, value=1200.5)
         assert reading.number == 1
         assert reading.value == 1200.5
 
     def test_cylinder_number_validation(self):
         """Test validation of cylinder number."""
-        # Valid cylinder numbers
-        CylinderReading(number=1, value=1200.0)
-        CylinderReading(number=6, value=1200.0)
-
-        # Invalid cylinder numbers
-        with pytest.raises(ValueError, match="Cylinder number must be >= 1"):
-            CylinderReading(number=0, value=1200.0)
+        Cylinder(number=1, value=1200.0)
+        Cylinder(number=6, value=1200.0)
 
         with pytest.raises(ValueError, match="Cylinder number must be >= 1"):
-            CylinderReading(number=-1, value=1200.0)
+            Cylinder(number=0, value=1200.0)
+
+        with pytest.raises(ValueError, match="Cylinder number must be >= 1"):
+            Cylinder(number=-1, value=1200.0)
 
     def test_temperature_value_validation(self):
         """Test validation of temperature values."""
-        # Valid numeric values
-        CylinderReading(number=1, value=1200)  # int
-        CylinderReading(number=1, value=1200.5)  # float
-        CylinderReading(number=1, value=0.0)  # zero
-        CylinderReading(number=1, value=-10.5)  # negative
-
-        # Invalid non-numeric values
-        with pytest.raises(ValueError, match="Temperature value must be numeric"):
-            CylinderReading(number=1, value="1200")  # type: ignore
+        Cylinder(number=1, value=1200)
+        Cylinder(number=1, value=1200.5)
+        Cylinder(number=1, value=0.0)
+        Cylinder(number=1, value=-10.5)
 
         with pytest.raises(ValueError, match="Temperature value must be numeric"):
-            CylinderReading(number=1, value=None)  # type: ignore
+            Cylinder(number=1, value="1200")  # type: ignore
+
+        with pytest.raises(ValueError, match="Temperature value must be numeric"):
+            Cylinder(number=1, value=None)  # type: ignore
 
 
-class TestCylinderReadings:
-    """Test cases for the CylinderReadings collection class."""
+class TestCylinders:
+    """Test cases for the Cylinders collection class."""
 
     def test_empty_readings(self):
         """Test behavior with empty readings list."""
-        readings = CylinderReadings([])
+        readings = Cylinders([])
         assert len(readings) == 0
         assert list(readings) == []
         assert readings.get_hottest() is None
@@ -58,8 +54,8 @@ class TestCylinderReadings:
 
     def test_single_reading(self):
         """Test behavior with a single reading."""
-        reading = CylinderReading(number=1, value=1200.0)
-        readings = CylinderReadings([reading])
+        reading = Cylinder(number=1, value=1200.0)
+        readings = Cylinders([reading])
 
         assert len(readings) == 1
         assert list(readings) == [reading]
@@ -70,10 +66,10 @@ class TestCylinderReadings:
 
     def test_multiple_readings(self):
         """Test behavior with multiple readings."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.5)
-        reading3 = CylinderReading(number=3, value=1180.0)
-        readings = CylinderReadings([reading1, reading2, reading3])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.5)
+        reading3 = Cylinder(number=3, value=1180.0)
+        readings = Cylinders([reading1, reading2, reading3])
 
         assert len(readings) == 3
         assert list(readings) == [reading1, reading2, reading3]
@@ -81,10 +77,10 @@ class TestCylinderReadings:
 
     def test_get_hottest(self):
         """Test finding the hottest cylinder."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.5)  # hottest
-        reading3 = CylinderReading(number=3, value=1180.0)
-        readings = CylinderReadings([reading1, reading2, reading3])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.5)
+        reading3 = Cylinder(number=3, value=1180.0)
+        readings = Cylinders([reading1, reading2, reading3])
 
         hottest = readings.get_hottest()
         assert hottest is not None
@@ -93,10 +89,10 @@ class TestCylinderReadings:
 
     def test_get_coolest(self):
         """Test finding the coolest cylinder."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.5)
-        reading3 = CylinderReading(number=3, value=1180.0)  # coolest
-        readings = CylinderReadings([reading1, reading2, reading3])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.5)
+        reading3 = Cylinder(number=3, value=1180.0)
+        readings = Cylinders([reading1, reading2, reading3])
 
         coolest = readings.get_coolest()
         assert coolest is not None
@@ -105,22 +101,21 @@ class TestCylinderReadings:
 
     def test_get_difference(self):
         """Test calculating temperature difference."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.5)  # hottest
-        reading3 = CylinderReading(number=3, value=1180.0)  # coolest
-        readings = CylinderReadings([reading1, reading2, reading3])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.5)
+        reading3 = Cylinder(number=3, value=1180.0)
+        readings = Cylinders([reading1, reading2, reading3])
 
         difference = readings.get_difference()
-        assert difference == 70.5  # 1250.5 - 1180.0
+        assert difference == 70.5
 
     def test_identical_temperatures(self):
         """Test behavior when all temperatures are identical."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1200.0)
-        reading3 = CylinderReading(number=3, value=1200.0)
-        readings = CylinderReadings([reading1, reading2, reading3])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1200.0)
+        reading3 = Cylinder(number=3, value=1200.0)
+        readings = Cylinders([reading1, reading2, reading3])
 
-        # Should return the first one encountered (max/min behavior)
         hottest = readings.get_hottest()
         coolest = readings.get_coolest()
         assert hottest is not None
@@ -131,9 +126,9 @@ class TestCylinderReadings:
 
     def test_iteration(self):
         """Test iterating over cylinder readings."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.0)
-        readings = CylinderReadings([reading1, reading2])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.0)
+        readings = Cylinders([reading1, reading2])
 
         result = []
         for reading in readings:
@@ -143,9 +138,9 @@ class TestCylinderReadings:
 
     def test_indexing(self):
         """Test indexing cylinder readings."""
-        reading1 = CylinderReading(number=1, value=1200.0)
-        reading2 = CylinderReading(number=2, value=1250.0)
-        readings = CylinderReadings([reading1, reading2])
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.0)
+        readings = Cylinders([reading1, reading2])
 
         assert readings[0] == reading1
         assert readings[1] == reading2
@@ -154,122 +149,126 @@ class TestCylinderReadings:
             readings[2]
 
 
-class TestEngineData:
-    """Test cases for the EngineData dataclass."""
+class TestRPM:
+    """Test cases for the RPM class."""
 
-    def test_default_initialization(self):
-        """Test creating EngineData with default values."""
-        engine_data = EngineData()
+    def test_default_rpm(self):
+        """Test creating RPM with default values."""
+        rpm = RPM()
+        assert rpm.left is None
+        assert rpm.right is None
+        assert rpm.computed is None
+        assert rpm.difference is None
 
-        # All optional fields should be None by default
-        assert engine_data.rpm is None
-        assert engine_data.manifold_pressure is None
-        assert engine_data.oil_pressure is None
-        assert engine_data.oil_temperature is None
-        assert engine_data.fuel_pressure is None
-        assert engine_data.volts is None
-        assert engine_data.amps is None
-        assert engine_data.g_force is None
+    def test_rpm_with_values(self):
+        """Test creating RPM with specific values."""
+        rpm = RPM(left=2400, right=2380, computed=2390)
+        assert rpm.left == 2400
+        assert rpm.right == 2380
+        assert rpm.computed == 2390
 
-        # Cylinder readings should be empty collections
-        assert len(engine_data.egts) == 0
-        assert len(engine_data.chts) == 0
+    def test_rpm_difference_calculation(self):
+        """Test RPM difference calculation."""
+        rpm = RPM(left=2400, right=2380)
+        assert rpm.difference == 20
 
-    def test_partial_initialization(self):
-        """Test creating EngineData with some values set."""
-        engine_data = EngineData(
-            rpm=2400.0,
-            manifold_pressure=25.5,
-            oil_pressure=60.0
-        )
+        rpm = RPM(left=2380, right=2400)
+        assert rpm.difference == 20
 
-        assert engine_data.rpm == 2400.0
-        assert engine_data.manifold_pressure == 25.5
-        assert engine_data.oil_pressure == 60.0
+    def test_rpm_difference_missing_values(self):
+        """Test RPM difference when values are missing."""
+        rpm = RPM(left=2400)
+        assert rpm.difference is None
 
-        # Unspecified fields should still be None
-        assert engine_data.oil_temperature is None
-        assert engine_data.fuel_pressure is None
+        rpm = RPM(right=2400)
+        assert rpm.difference is None
 
-    def test_full_initialization(self):
-        """Test creating EngineData with all values set."""
-        egt_readings = CylinderReadings([
-            CylinderReading(number=1, value=1200.0),
-            CylinderReading(number=2, value=1220.0)
-        ])
-        cht_readings = CylinderReadings([
-            CylinderReading(number=1, value=380.0),
-            CylinderReading(number=2, value=390.0)
-        ])
 
-        engine_data = EngineData(
-            rpm=2400.0,
-            manifold_pressure=25.5,
-            egts=egt_readings,
-            chts=cht_readings,
-            oil_pressure=60.0,
-            oil_temperature=180.0,
-            fuel_pressure=22.0,
-            volts=14.2,
-            amps=12.5,
-            g_force=1.2
-        )
+class TestFuel:
+    """Test cases for the Fuel class."""
 
-        assert engine_data.rpm == 2400.0
-        assert engine_data.manifold_pressure == 25.5
-        assert engine_data.egts == egt_readings
-        assert engine_data.chts == cht_readings
-        assert engine_data.oil_pressure == 60.0
-        assert engine_data.oil_temperature == 180.0
-        assert engine_data.fuel_pressure == 22.0
-        assert engine_data.volts == 14.2
-        assert engine_data.amps == 12.5
-        assert engine_data.g_force == 1.2
+    def test_default_fuel(self):
+        """Test creating Fuel with default values."""
+        fuel = Fuel()
+        assert fuel.pressure is None
+        assert fuel.flow is None
+        assert fuel.quantity is None
+        assert fuel.pressure_alert is False
+        assert fuel.quantity_alert is False
+        assert fuel.has_active_alert is False
 
-    def test_cylinder_readings_integration(self):
-        """Test integration with CylinderReadings in EngineData."""
-        egt_readings = CylinderReadings([
-            CylinderReading(number=1, value=1200.0),
-            CylinderReading(number=2, value=1250.0),
-            CylinderReading(number=3, value=1180.0)
-        ])
+    def test_fuel_with_values(self):
+        """Test creating Fuel with specific values."""
+        fuel = Fuel(pressure=22.5, flow=15.0, quantity=45.0)
+        assert fuel.pressure == 22.5
+        assert fuel.flow == 15.0
+        assert fuel.quantity == 45.0
 
-        engine_data = EngineData(egts=egt_readings)
+    def test_fuel_alerts(self):
+        """Test fuel alert functionality."""
+        fuel = Fuel(pressure_alert=True)
+        assert fuel.has_active_alert is True
 
-        # Test that we can access CylinderReadings methods
-        assert len(engine_data.egts) == 3
-        hottest = engine_data.egts.get_hottest()
-        coolest = engine_data.egts.get_coolest()
-        assert hottest is not None
-        assert coolest is not None
-        assert hottest.number == 2
-        assert coolest.number == 3
-        assert engine_data.egts.get_difference() == 70.0
+        fuel = Fuel(quantity_alert=True)
+        assert fuel.has_active_alert is True
 
-    def test_negative_values_allowed(self):
-        """Test that negative values are allowed where appropriate."""
-        engine_data = EngineData(
-            g_force=-0.5,  # Negative G-force should be allowed
-            oil_temperature=-10.0  # Extreme cold temperatures
-        )
+        fuel = Fuel(pressure_alert=True, quantity_alert=True)
+        assert fuel.has_active_alert is True
 
-        assert engine_data.g_force == -0.5
-        assert engine_data.oil_temperature == -10.0
+        fuel = Fuel(pressure_alert=False, quantity_alert=False)
+        assert fuel.has_active_alert is False
 
-    def test_zero_values_allowed(self):
-        """Test that zero values are handled correctly."""
-        engine_data = EngineData(
-            rpm=0.0,
-            manifold_pressure=0.0,
-            oil_pressure=0.0,
-            volts=0.0,
-            amps=0.0,
-            g_force=0.0
-        )
 
-        assert engine_data.rpm == 0.0
-        assert engine_data.manifold_pressure == 0.0
-        assert engine_data.oil_pressure == 0.0
-        assert engine_data.volts == 0.0
-        assert engine_data.amps == 0.0
-        assert engine_data.g_force == 0.0
+class TestOil:
+    """Test cases for the Oil class."""
+
+    def test_default_oil(self):
+        """Test creating Oil with default values."""
+        oil = Oil()
+        assert oil.pressure is None
+        assert oil.temperature is None
+        assert oil.pressure_alert is False
+        assert oil.temperature_alert is False
+        assert oil.has_active_alert is False
+
+    def test_oil_with_values(self):
+        """Test creating Oil with specific values."""
+        oil = Oil(pressure=60.0, temperature=180.0)
+        assert oil.pressure == 60.0
+        assert oil.temperature == 180.0
+
+    def test_oil_alerts(self):
+        """Test oil alert functionality."""
+        oil = Oil(pressure_alert=True)
+        assert oil.has_active_alert is True
+
+        oil = Oil(temperature_alert=True)
+        assert oil.has_active_alert is True
+
+        oil = Oil(pressure_alert=True, temperature_alert=True)
+        assert oil.has_active_alert is True
+
+        oil = Oil(pressure_alert=False, temperature_alert=False)
+        assert oil.has_active_alert is False
+
+
+class TestElectrical:
+    """Test cases for the Electrical class."""
+
+    def test_default_electrical(self):
+        """Test creating Electrical with default values."""
+        electrical = Electrical()
+        assert electrical.volts is None
+        assert electrical.amps is None
+
+    def test_electrical_with_values(self):
+        """Test creating Electrical with specific values."""
+        electrical = Electrical(volts=14.2, amps=12.5)
+        assert electrical.volts == 14.2
+        assert electrical.amps == 12.5
+
+    def test_electrical_zero_values(self):
+        """Test Electrical with zero values."""
+        electrical = Electrical(volts=0.0, amps=0.0)
+        assert electrical.volts == 0.0
+        assert electrical.amps == 0.0

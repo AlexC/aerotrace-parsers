@@ -5,17 +5,13 @@ Data models for standardized EMS telemetry representation.
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-@dataclass
-class CylinderReading:
-    """
-    Temperature reading for a specific cylinder (EGT or CHT).
 
-    Args:
-        number: Cylinder number (1-based)
-        value: Temperature in degrees Fahrenheit
-    """
-    number: int
-    value: float
+@dataclass
+class Cylinder:
+    """Temperature reading for a specific cylinder (EGT or CHT)."""
+
+    number: int  # Cylinder number (1-based)
+    value: float  # Temperature in degrees Fahrenheit
 
     def __post_init__(self) -> None:
         if self.number < 1:
@@ -24,12 +20,10 @@ class CylinderReading:
             raise ValueError("Temperature value must be numeric")
 
 
-class CylinderReadings:
-    """
-    Collection of cylinder temperature readings with utility methods.
-    """
+class Cylinders:
+    """Collection of cylinder temperature readings with utility methods."""
 
-    def __init__(self, readings: List[CylinderReading]) -> None:
+    def __init__(self, readings: List[Cylinder]) -> None:
         self._readings = readings
 
     def __iter__(self):
@@ -41,14 +35,14 @@ class CylinderReadings:
     def __getitem__(self, index):
         return self._readings[index]
 
-    def get_hottest(self) -> Optional[CylinderReading]:
+    def get_hottest(self) -> Optional[Cylinder]:
         """Get the cylinder with the highest temperature reading."""
         if not self._readings:
             return None
 
         return max(self._readings, key=lambda x: x.value)
 
-    def get_coolest(self) -> Optional[CylinderReading]:
+    def get_coolest(self) -> Optional[Cylinder]:
         """Get the cylinder with the lowest temperature reading."""
         if not self._readings:
             return None
@@ -67,30 +61,75 @@ class CylinderReadings:
 
 
 @dataclass
-class EngineData:
-    """
-    Standardized engine data format for all EMS types
+class RPM:
+    """Engine RPM data with dual magneto support."""
 
-    All temperature values are in Fahrenheit, pressure in PSI, electrical
-    values in standard units (Volts, Amps), and G-force as a multiplier
-    """
-    rpm: Optional[float] = None
-    manifold_pressure: Optional[float] = None  # InHg
+    left: Optional[int] = None
+    right: Optional[int] = None
+    computed: Optional[int] = None
 
-    # Cylinders
-    egts: CylinderReadings = field(default_factory=lambda: CylinderReadings([]))
-    chts: CylinderReadings = field(default_factory=lambda: CylinderReadings([]))
+    @property
+    def difference(self) -> Optional[int]:
+        """Calculate RPM difference between magnetos (useful for detecting mag issues)."""
+        if self.left is not None and self.right is not None:
+            return abs(self.left - self.right)
+        return None
 
-    # Oil system
-    oil_pressure: Optional[float] = None  # PSI
-    oil_temperature: Optional[float] = None  # °F
 
-    # Fuel system
-    fuel_pressure: Optional[float] = None  # PSI
+@dataclass
+class Fuel:
+    """Fuel system data with pressure, flow, quantity and alerts."""
 
-    # Electrical system
+    pressure: Optional[float] = None  # PSI
+    flow: Optional[float] = None  # LPH
+    quantity: Optional[float] = None  # L
+    pressure_alert: bool = False
+    quantity_alert: bool = False
+
+    @property
+    def has_active_alert(self) -> bool:
+        """Check if any fuel system alerts are active."""
+        return self.pressure_alert or self.quantity_alert
+
+
+@dataclass
+class Oil:
+    """Oil system data with pressure, temperature and alerts."""
+
+    pressure: Optional[float] = None  # PSI
+    temperature: Optional[float] = None  # Fahrenheit
+    pressure_alert: bool = False
+    temperature_alert: bool = False
+
+    @property
+    def has_active_alert(self) -> bool:
+        """Check if any oil system alerts are active."""
+        return self.pressure_alert or self.temperature_alert
+
+
+@dataclass
+class Electrical:
+    """Electrical system data."""
+
     volts: Optional[float] = None  # V
     amps: Optional[float] = None  # A
 
+
+@dataclass
+class EngineData:
+    """Standardized engine data format for all EMS types."""
+
+    rpm: RPM = field(default_factory=RPM)
+    manifold_pressure: Optional[float] = None  # InHg
+
+    # Cylinder temperatures
+    egts: Cylinders = field(default_factory=lambda: Cylinders([]))
+    chts: Cylinders = field(default_factory=lambda: Cylinders([]))
+
+    # System components
+    fuel: Fuel = field(default_factory=Fuel)
+    oil: Oil = field(default_factory=Oil)
+    electrical: Electrical = field(default_factory=Electrical)
+
     # General
-    g_force: Optional[float] = None  # G multiplier
+    g_force: Optional[float] = None
