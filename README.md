@@ -24,18 +24,18 @@ pip install aerotrace-parsers
 ```bash
 git clone https://github.com/alexc/aerotrace-parsers.git
 cd aerotrace-parsers
-pip install -e ".[dev]"
+make install
 ```
 
 ### Running Tests
 ```bash
-pytest
+make test
 ```
 
 ### Code Quality
 ```bash
-ruff check src/ tests/
-ruff format src/ tests/
+make lint
+make format
 ```
 
 ## License
