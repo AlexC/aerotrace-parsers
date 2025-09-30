@@ -39,7 +39,7 @@ Repository = "https://github.com/alexc/aerotrace-parsers"
 Issues = "https://github.com/alexc/aerotrace-parsers/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/aerotrace/parsers"]
+packages = ["src/aerotrace"]
 
 # Ruff configuration - using smart defaults
 [tool.ruff]
@@ -47,4 +47,4 @@ target-version = "py39"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=src/aerotrace/parsers --cov-report=term-missing"
+addopts = "-v --cov=src/aerotrace --cov-report=term-missing"
