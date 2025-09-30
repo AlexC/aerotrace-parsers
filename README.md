@@ -9,7 +9,7 @@ A Python package for parsing aircraft Engine Monitoring System (EMS) telemetry d
 ## Supported EMS Types
 | EMS Type | Status | Description |
 |----------|--------|-------------|
-| E.I CGR-30P  | � Todo | Electronics International CGR-30P Primary |
+| E.I CGR-30P  | 🚧 In Progress | Electronics International CGR-30P Primary |
 
 ## Installation
 ```bash
@@ -17,7 +17,15 @@ pip install aerotrace-parsers
 ```
 
 ## Quick Start
-...
+```python
+from aerotrace.parsers import cgr30p
+
+# Parse real CGR-30P flight data from an example file
+for engine_data in cgr30p.parse_file('docs/example-cgr30p-flight-data.csv'):
+    print(f"RPM: {engine_data.rpm.left}/{engine_data.rpm.right}")
+    print(f"Fuel: {engine_data.fuel.quantity}L")
+    # ... process engine data
+```
 
 ## Development
 ### Setup
