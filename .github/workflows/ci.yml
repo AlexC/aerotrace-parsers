@@ -22,3 +22,12 @@ jobs:
       - name: Install dependencies
         run: make install
 
+      - name: Lint with ruff
+        run: make lint
+
+      - name: Format with ruff
+        run: make format
+
+      - name: Test with pytest
+        run: make test
+
