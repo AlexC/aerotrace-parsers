@@ -12,5 +12,8 @@ lint:
 format:
 	ruff format src/ tests/
 
+check-format:
+	ruff format --check src/ tests/
+
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} +
