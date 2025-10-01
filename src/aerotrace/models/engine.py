@@ -2,7 +2,7 @@
 Data models for standardized EMS telemetry representation
 """
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from typing import List, Optional
 
 
@@ -34,6 +34,10 @@ class Cylinders:
 
     def __getitem__(self, index):
         return self._readings[index]
+
+    def to_dict(self) -> List[dict]:
+        """Convert cylinder readings to a list of dictionaries"""
+        return [asdict(cyl) for cyl in self._readings]
 
     def get_hottest(self) -> Optional[Cylinder]:
         """Get the cylinder with the highest temperature reading"""
@@ -120,16 +124,17 @@ class EngineData:
     """Standardized engine data format for all EMS types"""
 
     rpm: RPM = field(default_factory=RPM)
-    manifold_pressure: Optional[float] = None  # InHg
-
-    # Cylinder temperatures
+    manifold_pressure: Optional[float] = None
     egts: Cylinders = field(default_factory=lambda: Cylinders([]))
     chts: Cylinders = field(default_factory=lambda: Cylinders([]))
-
-    # System components
     fuel: Fuel = field(default_factory=Fuel)
     oil: Oil = field(default_factory=Oil)
     electrical: Electrical = field(default_factory=Electrical)
-
-    # General
     g_force: Optional[float] = None
+
+    def to_dict(self) -> dict:
+        """Convert EngineData to a dictionary"""
+        base_dict = asdict(self)
+        base_dict["egts"] = self.egts.to_dict()
+        base_dict["chts"] = self.chts.to_dict()
+        return base_dict

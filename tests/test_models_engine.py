@@ -3,7 +3,7 @@ Tests for aerotrace.models.engine module.
 """
 
 import pytest
-from aerotrace.models import Cylinder, Cylinders, RPM, Fuel, Oil, Electrical
+from aerotrace.models import Cylinder, Cylinders, RPM, Fuel, Oil, Electrical, EngineData
 
 
 class TestCylinder:
@@ -148,6 +148,27 @@ class TestCylinders:
         with pytest.raises(IndexError):
             readings[2]
 
+    def test_to_dict(self):
+        """Test converting cylinder readings to dictionary format."""
+        reading1 = Cylinder(number=1, value=1200.0)
+        reading2 = Cylinder(number=2, value=1250.5)
+        reading3 = Cylinder(number=3, value=1180.0)
+        readings = Cylinders([reading1, reading2, reading3])
+
+        result = readings.to_dict()
+        expected = [
+            {"number": 1, "value": 1200.0},
+            {"number": 2, "value": 1250.5},
+            {"number": 3, "value": 1180.0},
+        ]
+        assert result == expected
+
+    def test_to_dict_empty(self):
+        """Test to_dict with empty readings."""
+        readings = Cylinders([])
+        result = readings.to_dict()
+        assert result == []
+
 
 class TestRPM:
     """Test cases for the RPM class."""
@@ -272,3 +293,86 @@ class TestElectrical:
         electrical = Electrical(volts=0.0, amps=0.0)
         assert electrical.volts == 0.0
         assert electrical.amps == 0.0
+
+
+class TestEngineData:
+    """Test cases for the EngineData class."""
+
+    def test_to_dict_default(self):
+        """Test to_dict with default EngineData."""
+        engine_data = EngineData()
+        result = engine_data.to_dict()
+
+        expected = {
+            "rpm": {"left": None, "right": None, "computed": None},
+            "manifold_pressure": None,
+            "egts": [],
+            "chts": [],
+            "fuel": {
+                "pressure": None,
+                "flow": None,
+                "quantity": None,
+                "pressure_alert": False,
+                "quantity_alert": False,
+            },
+            "oil": {
+                "pressure": None,
+                "temperature": None,
+                "pressure_alert": False,
+                "temperature_alert": False,
+            },
+            "electrical": {"volts": None, "amps": None},
+            "g_force": None,
+        }
+
+        assert result == expected
+
+    def test_to_dict_with_data(self):
+        """Test to_dict with populated EngineData."""
+        rpm = RPM(left=2400, right=2380, computed=2390)
+        egts = Cylinders(
+            [Cylinder(number=1, value=1200.0), Cylinder(number=2, value=1250.0)]
+        )
+        chts = Cylinders(
+            [Cylinder(number=1, value=380.0), Cylinder(number=2, value=395.0)]
+        )
+        fuel = Fuel(pressure=25.5, flow=45.2, quantity=120.0)
+        oil = Oil(pressure=85.0, temperature=180.0)
+        electrical = Electrical(volts=14.2, amps=12.5)
+
+        engine_data = EngineData(
+            rpm=rpm,
+            manifold_pressure=24.5,
+            egts=egts,
+            chts=chts,
+            fuel=fuel,
+            oil=oil,
+            electrical=electrical,
+            g_force=1.2,
+        )
+
+        result = engine_data.to_dict()
+
+        expected = {
+            "rpm": {"left": 2400, "right": 2380, "computed": 2390},
+            "manifold_pressure": 24.5,
+            "egts": [{"number": 1, "value": 1200.0}, {"number": 2, "value": 1250.0}],
+            "chts": [{"number": 1, "value": 380.0}, {"number": 2, "value": 395.0}],
+            "fuel": {
+                "pressure": 25.5,
+                "flow": 45.2,
+                "quantity": 120.0,
+                "pressure_alert": False,
+                "quantity_alert": False,
+            },
+            "oil": {
+                "pressure": 85.0,
+                "temperature": 180.0,
+                "pressure_alert": False,
+                "temperature_alert": False,
+            },
+            "electrical": {"volts": 14.2, "amps": 12.5},
+            "g_force": 1.2,
+        }
+
+        assert result == expected
