@@ -1,10 +1,10 @@
 # AeroTrace Parsers
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
-[![PyPI version](https://badge.fury.io/py/aerotrace-parsers.svg)](https://badge.fury.io/py/aerotrace-parsers)
+[![PyPI version](https://img.shields.io/pypi/v/aerotrace-parsers.svg)](https://pypi.org/project/aerotrace-parsers/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Python package for parsing aircraft Engine Monitoring System (EMS) telemetry data into standardized formats for real-time monitoring and analysis.
+A Python package for parsing aircraft Engine Monitoring System (EMS) telemetry data into a unified format for real-time monitoring and analysis.
 
 ## Supported EMS Types
 | EMS Type | Status | Description |
@@ -26,6 +26,8 @@ for engine_data in cgr30p.parse_file('docs/example-cgr30p-flight-data.csv'):
     print(f"Fuel: {engine_data.fuel.quantity}L")
     # ... process engine data
 ```
+
+For complete data model definitions, see [`src/aerotrace/models/engine.py`](src/aerotrace/models/engine.py).
 
 ## Development
 ### Setup
