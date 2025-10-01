@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "aerotrace-parsers"
-version = "0.2.0"
+version = "0.3.0"
 description = "Aircraft Engine Monitoring System (EMS) data parsers for real-time telemetry processing"
 readme = "README.md"
 requires-python = ">=3.9"
