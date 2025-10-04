@@ -16,7 +16,7 @@ Example usage:
     >>>
     >>> # Parse individual row (if you have CSV data already loaded)
     >>> row_dict = {'RPMLEFT': '2400', 'RPMRIGHT': '2380', 'SEL TANK QTY': 'TOTAL   : 45.2'}
-    >>> engine_data = cgr30p.parse_dict(row_dict)
+    >>> engine_data = cgr30p.parse_csv_row(row_dict)
     >>> print(f"Left RPM: {engine_data.rpm.left}")
 """
 
@@ -35,7 +35,7 @@ DATA_START_LINE = 15
 logger = logging.getLogger(__name__)
 
 # Public API
-__all__ = ["parse_file", "parse_dict"]
+__all__ = ["parse_file", "parse_csv_row"]
 
 
 def _get_float(data: Dict[str, str], key: str) -> Optional[float]:
@@ -126,7 +126,7 @@ def _parse_cylinders(
     return engine.Cylinders(readings)
 
 
-def parse_dict(data: Dict[str, str]) -> engine.EngineData:
+def parse_csv_row(data: Dict[str, str]) -> engine.EngineData:
     """Parse a single row of CGR-30P data from a dictionary
 
     Args:
@@ -194,7 +194,7 @@ def parse_file(file_path: Union[str, Path]) -> Iterator[engine.EngineData]:
 
         for row_num, row in enumerate(reader, start=DATA_START_LINE):
             try:
-                engine_data = parse_dict(row)
+                engine_data = parse_csv_row(row)
                 yield engine_data
             except Exception as e:
                 logger.warning("Error parsing row %d: %s", row_num, e)
